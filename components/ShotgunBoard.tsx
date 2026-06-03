@@ -8,16 +8,16 @@
 import React, { useState, useMemo } from 'react';
 import { Button } from './Button';
 import { useTimer } from '../hooks/useTimer';
-import type { CellOwner } from '../types';
+import type { CellOwner, BoardTeam } from '../types';
 import { THEME_COLORS } from '../lib/constants';
 
 export interface ShotgunBoardProps {
   /** Board ID */
   boardId?: string;
-  /** Home team name */
-  homeTeam?: string;
-  /** Away team name */
-  awayTeam?: string;
+  /** Home team */
+  homeTeam?: BoardTeam;
+  /** Away team */
+  awayTeam?: BoardTeam;
   /** Game start time (timestamp in milliseconds) */
   startTime?: number;
   /** Initial cells with owners */
@@ -58,9 +58,8 @@ const SHOTGUN_PAYOUTS = {
  * ```
  */
 export const ShotgunBoard: React.FC<ShotgunBoardProps> = ({
-  boardId,
-  homeTeam = 'Home',
-  awayTeam = 'Away',
+  homeTeam,
+  awayTeam,
   startTime,
   initialCells,
   onCellClaim,
@@ -252,7 +251,7 @@ export const ShotgunBoard: React.FC<ShotgunBoardProps> = ({
       {/* Team names */}
       <div className="text-center mb-8">
         <span className="text-xl font-bold text-white">
-          {awayTeam} @ {homeTeam}
+          {awayTeam?.abbreviation || 'Away'} @ {homeTeam?.abbreviation || 'Home'}
         </span>
       </div>
 

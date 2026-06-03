@@ -14,7 +14,7 @@ import type { GAME_MODES, BOARD_STATUS, PAYMENT_PROVIDERS, TEAM_TYPES, SPORTS_LE
 /**
  * Supported game modes
  */
-export type GameMode = typeof GAME_MODES[keyof typeof GAME_MODES];
+export type GameMode = keyof typeof GAME_MODES;
 
 /**
  * Grid size configuration for a game mode
@@ -425,4 +425,8 @@ export interface ScoreData {
   col: number;
   period?: string;
   timeRemaining?: string;
+  homeHalftime?: number;
+  awayHalftime?: number;
+  homeFinal?: number;
+  awayFinal?: number;
 }

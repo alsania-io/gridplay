@@ -6,7 +6,7 @@
  */
 
 import { supabase, createServerClient } from '../utils/supabaseClient';
-import type { 
+import type {
   Database,
   Json,
 } from '../types/database';
@@ -131,6 +131,9 @@ export async function createGame(
     const config: BoardConfig = {
       mode: payload.mode,
       pricePerCell: payload.pricePerCell,
+      entryFee: payload.pricePerCell,
+      prizePool: 0,
+      startTime: payload.gameStartTime || new Date().toISOString(),
       homeTeam: {
         id: payload.homeTeamId,
         name: payload.homeTeamId,

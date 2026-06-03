@@ -8,7 +8,7 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../../utils/supabaseClient';
-import type { Game, GameMode, BoardConfig, ScoreData } from '../../../types';
+import type { Game, GameMode, BoardConfig } from '../../../types';
 import { BOARD_STATUS } from '../../../lib/constants';
 
 type GameResponse = {
@@ -29,7 +29,6 @@ type GameUpdateRequest = {
   name?: string;
   status?: string;
   config?: Partial<BoardConfig>;
-  scores?: ScoreData;
 };
 
 type ErrorResponse = {
@@ -78,10 +77,12 @@ async function handleGet(
       mode: gameData.mode as GameMode,
       status: gameData.status,
       config: gameData.config as BoardConfig,
+      cells: [],
+      rowScores: [],
+      colScores: [],
       createdAt: gameData.created_at,
       updatedAt: gameData.updated_at,
-      creatorId: gameData.creator_id,
-      scores: gameData.scores as ScoreData | undefined,
+      createdBy: gameData.creator_id || '',
     };
 
     // Include cells if requested
@@ -97,7 +98,7 @@ async function handleGet(
         // Continue without cells
       }
 
-      const cells = (cellsData || []).map(cell => ({
+      const cells = (cellsData || []).map((cell: { cell_index: number; owner_id: string | null; owner_name: string | null; claimed_at: string | null }) => ({
         index: cell.cell_index,
         ownerId: cell.owner_id,
         ownerName: cell.owner_name,
@@ -164,10 +165,10 @@ async function handlePut(
     }
 
     if (body.status !== undefined) {
-      const validStatuses = Object.values(BOARD_STATUS);
+      const validStatuses = Object.values(BOARD_STATUS) as string[];
       if (!validStatuses.includes(body.status)) {
-        return res.status(400).json({ 
-          error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` 
+        return res.status(400).json({
+          error: `Invalid status. Must be one of: ${validStatuses.join(', ')}`
         });
       }
       updateData.status = body.status;
@@ -178,10 +179,6 @@ async function handlePut(
         ...existingGame.config,
         ...body.config,
       };
-    }
-
-    if (body.scores !== undefined) {
-      updateData.scores = body.scores;
     }
 
     // Update game
@@ -204,10 +201,12 @@ async function handlePut(
       mode: data.mode as GameMode,
       status: data.status,
       config: data.config as BoardConfig,
+      cells: [],
+      rowScores: [],
+      colScores: [],
       createdAt: data.created_at,
       updatedAt: data.updated_at,
-      creatorId: data.creator_id,
-      scores: data.scores as ScoreData | undefined,
+      createdBy: data.creator_id || '',
     };
 
     return res.status(200).json({ game });

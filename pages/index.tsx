@@ -11,7 +11,7 @@ import { Layout } from '../components/Layout';
 import { Button } from '../components/Button';
 import { GameCard } from '../components/GameCard';
 import { listGames } from '../lib/api';
-import { GAME_MODES, BOARD_STATUS, THEME_COLORS } from '../lib/constants';
+import { BOARD_STATUS, THEME_COLORS } from '../lib/constants';
 import type { BoardListItem } from '../types';
 
 // Default navigation items
@@ -24,21 +24,21 @@ const defaultNavItems = [
 // Featured game modes for the home page
 const featuredModes = [
   {
-    mode: GAME_MODES.SHOTGUN,
+    mode: 'shotgun',
     title: 'Shotgun',
     description: 'Fast-paced linear game. First to claim wins!',
     icon: '🎯',
     href: '/shotgun',
   },
   {
-    mode: GAME_MODES.FIVE_BY_FIVE,
+    mode: '5x5',
     title: '5x5 Grid',
     description: 'Classic 25-cell grid with quarter payouts.',
     icon: '🏈',
     href: '/game?mode=5x5',
   },
   {
-    mode: GAME_MODES.TEN_BY_TEN,
+    mode: '10x10',
     title: '10x10 Grid',
     description: 'Traditional 100-cell football squares.',
     icon: '🏆',
@@ -74,9 +74,15 @@ export interface HomePageProps {
 }
 
 export const getServerSideProps = async () => {
+  // Skip Supabase during build — fail fast with empty state
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return { props: { featuredGames: [] } };
+  }
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
     const result = await listGames(BOARD_STATUS.OPEN, 6);
-    
+    clearTimeout(timeout);
     return {
       props: {
         featuredGames: result.success ? result.data : [],
@@ -224,8 +230,7 @@ const HomePage: React.FC<HomePageProps> = ({ featuredGames = [] }) => {
                 {featuredGames.map((game) => (
                   <GameCard 
                     key={game.id} 
-                    game={game}
-                    href={`/game/${game.id}`}
+                    board={game}
                   />
                 ))}
               </div>

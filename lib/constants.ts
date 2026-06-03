@@ -13,6 +13,10 @@
  * Supported game modes for GridPlay
  */
 export const GAME_MODES = {
+  SHOTGUN: { name: 'Shotgun', gridSize: { rows: 2, cols: 10 }, totalCells: 20 },
+  FIVE_BY_FIVE: { name: '5x5 Grid', gridSize: { rows: 5, cols: 5 }, totalCells: 25 },
+  TEN_BY_TEN: { name: '10x10 Grid', gridSize: { rows: 10, cols: 10 }, totalCells: 100 },
+  // Legacy lowercase keys for DB compatibility
   shotgun: { name: 'Shotgun', gridSize: { rows: 2, cols: 10 }, totalCells: 20 },
   '5x5': { name: '5x5 Grid', gridSize: { rows: 5, cols: 5 }, totalCells: 25 },
   '10x10': { name: '10x10 Grid', gridSize: { rows: 10, cols: 10 }, totalCells: 100 },
@@ -22,6 +26,10 @@ export const GAME_MODES = {
  * Grid size configurations for each game mode
  */
 export const GRID_SIZES = {
+  SHOTGUN: { rows: 2, cols: 10, totalCells: 20 },
+  FIVE_BY_FIVE: { rows: 5, cols: 5, totalCells: 25 },
+  TEN_BY_TEN: { rows: 10, cols: 10, totalCells: 100 },
+  // Legacy lowercase keys for DB compatibility
   shotgun: { rows: 2, cols: 10, totalCells: 20 },
   '5x5': { rows: 5, cols: 5, totalCells: 25 },
   '10x10': { rows: 10, cols: 10, totalCells: 100 },
@@ -262,6 +270,9 @@ export const ENTRY_FEES = {
  * Payout structure percentages by game mode
  */
 export const PAYOUT_STRUCTURE = {
+  SHOTGUN: { first: 0.5, second: 0.3, third: 0.2 },
+  FIVE_BY_FIVE: { first: 0.5, second: 0.3, third: 0.2 },
+  TEN_BY_TEN: { first: 0.5, second: 0.25, third: 0.15, fourth: 0.1 },
   shotgun: { first: 0.5, second: 0.3, third: 0.2 },
   '5x5': { first: 0.5, second: 0.3, third: 0.2 },
   '10x10': { first: 0.5, second: 0.25, third: 0.15, fourth: 0.1 },

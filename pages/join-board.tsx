@@ -14,9 +14,9 @@ import { TokenPayment } from '../components/TokenPayment';
 import { GameBoard } from '../components/GameBoard';
 import { ShotgunBoard } from '../components/ShotgunBoard';
 import { getGame, joinGame, claimCell } from '../lib/api';
-import { GAME_MODES, THEME_COLORS, BOARD_STATUS } from '../lib/constants';
+import { GAME_MODES, THEME_COLORS } from '../lib/constants';
 import { TOKEN_METADATA, type TokenSymbol } from '../lib/tokens';
-import type { Game, GameMode, CellOwner, BoardConfig } from '../types';
+import type { BoardState, GameMode, CellOwner, BoardConfig } from '../types';
 
 type JoinState = 'loading' | 'not_found' | 'join_form' | 'payment' | 'board_view' | 'error';
 
@@ -29,7 +29,7 @@ export default function JoinBoard() {
   const { isConnected, isCorrectNetwork, formattedBalances } = useWallet();
 
   // State
-  const [game, setGame] = useState<Game | null>(null);
+  const [game, setGame] = useState<BoardState | null>(null);
   const [state, setState] = useState<JoinState>('loading');
   const [error, setError] = useState<string | null>(null);
   
@@ -99,7 +99,7 @@ export default function JoinBoard() {
   // Get game mode configuration
   const gameModeConfig = useMemo(() => {
     if (!game) return null;
-    return GAME_MODES[game.mode];
+    return GAME_MODES[game.config.mode as keyof typeof GAME_MODES];
   }, [game]);
 
   // Get entry fee from game config
@@ -113,6 +113,11 @@ export default function JoinBoard() {
   const totalCost = useMemo(() => {
     return selectedCells.size * entryFee;
   }, [selectedCells, entryFee]);
+
+  // Get config for display
+  const config = useMemo(() => {
+    return game?.config as BoardConfig | undefined;
+  }, [game]);
 
   const selectedTokenMeta = TOKEN_METADATA[selectedTokenSymbol];
 
@@ -382,7 +387,7 @@ export default function JoinBoard() {
               {game.name}
             </h1>
             <p className="text-[#9CA3AF] mb-4">
-              {config.awayTeam} @ {config.homeTeam}
+              {config?.awayTeam?.name || "Away"} @ {config?.homeTeam?.name || "Home"}
             </p>
             
             <div className="grid grid-cols-3 gap-4 text-center">
@@ -502,7 +507,7 @@ export default function JoinBoard() {
               {game.name}
             </h1>
             <p className="text-[#9CA3AF] mb-4">
-              {config.awayTeam} @ {config.homeTeam}
+              {config?.awayTeam?.name || "Away"} @ {config?.homeTeam?.name || "Home"}
             </p>
             
             <div className="border-t border-[#374151] pt-4 mt-2">
@@ -546,7 +551,7 @@ export default function JoinBoard() {
   // Board view state
   if (state === 'board_view' && game && gameModeConfig) {
     const config = game.config as BoardConfig;
-    const isShotgun = game.mode === 'shotgun';
+    const isShotgun = config.mode === 'shotgun';
     const availableCells = gameModeConfig.totalCells - claimedCells.size;
     const userClaimedCount = Array.from(claimedCells.values()).filter(c => c.userId === userId).length;
     
@@ -562,7 +567,7 @@ export default function JoinBoard() {
               {game.name}
             </h1>
             <p className="text-lg text-white mb-2">
-              {config.awayTeam} @ {config.homeTeam}
+              {config?.awayTeam?.name || "Away"} @ {config?.homeTeam?.name || "Home"}
             </p>
             <div className="flex justify-center gap-6 text-sm">
               <div>
@@ -593,32 +598,47 @@ export default function JoinBoard() {
             </div>
           )}
 
-          {/* Game Board */}
+{/* Game Board */}
           <div className="mb-8">
-            {isShotgun ? (
-              <ShotgunBoard
-                boardId={game.id}
-                homeTeam={config.homeTeam}
-                awayTeam={config.awayTeam}
-                startTime={config.startTime ? new Date(config.startTime).getTime() : undefined}
-                initialCells={claimedCells}
-                onCellClaim={handleCellClaim}
-                userId={userId || undefined}
-                displayName={displayName}
-              />
-            ) : (
-              <GameBoard
-                boardId={game.id}
-                mode={game.mode}
-                homeTeam={config.homeTeam}
-                awayTeam={config.awayTeam}
-                gridSize={gameModeConfig.gridSize}
-                initialCells={claimedCells}
-                onCellClick={toggleCellSelection}
-                selectedCells={selectedCells}
-                userId={userId || undefined}
-              />
-            )}
+{isShotgun ? (
+                <ShotgunBoard
+                  homeTeam={config.homeTeam || { id: 'home', name: 'Home', abbreviation: 'HME' }}
+                  awayTeam={config.awayTeam || { id: 'away', name: 'Away', abbreviation: 'AWY' }}
+                  startTime={config.startTime ? new Date(config.startTime).getTime() : undefined}
+                  initialCells={claimedCells}
+                  onCellClaim={handleCellClaim}
+                  userId={userId || undefined}
+                  displayName={displayName}
+                />
+) : (
+               <GameBoard
+                 board={{
+                   id: game.id,
+                   name: game.name,
+                   config: config,
+                   status: game.status,
+                   cells: Array.from(claimedCells.entries()).map(([index, owner]) => ({
+                     row: Math.floor(index / (gameModeConfig.gridSize.cols || 5)),
+                     col: index % (gameModeConfig.gridSize.cols || 5),
+                     owner,
+                     homeScore: null,
+                     awayScore: null,
+                     isWinner: false,
+                   })),
+                   rowScores: [],
+                   colScores: [],
+                   createdBy: game.createdBy,
+                   createdAt: game.createdAt,
+                   updatedAt: game.updatedAt,
+                 }}
+                 mode={config.mode}
+                 onCellClick={toggleCellSelection}
+                 selectedCells={Array.from(selectedCells).map(idx => ({
+                   row: Math.floor(idx / (gameModeConfig.gridSize.cols || 5)),
+                   col: idx % (gameModeConfig.gridSize.cols || 5),
+                 }))}
+               />
+             )}
           </div>
 
           {/* Selection Summary (for non-shotgun modes) */}

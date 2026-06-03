@@ -5,36 +5,36 @@
  * Uses the ShotgunBoard component for the game board.
  */
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { Layout } from '../components/Layout';
 import { Button } from '../components/Button';
 import { ShotgunBoard } from '../components/ShotgunBoard';
 import { useTimer } from '../hooks/useTimer';
 import { getGame, joinGame, claimCell, generateScores, calculateWinners } from '../lib/api';
-import { THEME_COLORS, GAME_MODES, BOARD_STATUS } from '../lib/constants';
-import type { Game, CellOwner, BoardConfig, ScoreData } from '../types';
+import { THEME_COLORS } from '../lib/constants';
+import type { BoardState, CellOwner, BoardConfig, ScoreData } from '../types';
 
 type GameState = 'loading' | 'not_found' | 'setup' | 'playing' | 'completed' | 'error';
 
-// Demo mode data for testing without backend
-const DEMO_GAME: Game = {
+const DEMO_GAME: BoardState = {
   id: 'demo-shotgun',
   name: 'Demo Shotgun Game',
-  mode: 'shotgun',
   status: 'open',
   config: {
-    homeTeam: 'Chiefs',
-    awayTeam: '49ers',
+    mode: 'shotgun',
+    pricePerCell: 5,
+    homeTeam: { id: 'home', name: 'Chiefs', abbreviation: 'KC' },
+    awayTeam: { id: 'away', name: '49ers', abbreviation: 'SF' },
     entryFee: 5,
     prizePool: 100,
-    payouts: {
-      first: 60,
-      second: 30,
-      third: 10,
-    },
-    startTime: new Date(Date.now() + 300000).toISOString(), // 5 minutes from now
+    sport: 'nfl',
+    startTime: new Date(Date.now() + 300000).toISOString(),
   },
+  cells: [],
+  rowScores: [],
+  colScores: [],
+  createdBy: 'demo',
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 };
@@ -44,7 +44,7 @@ export default function ShotgunPage() {
   const { id: gameId, demo } = router.query;
 
   // State
-  const [game, setGame] = useState<Game | null>(null);
+  const [game, setGame] = useState<BoardState | null>(null);
   const [gameState, setGameState] = useState<GameState>('loading');
   const [error, setError] = useState<string | null>(null);
   
@@ -54,10 +54,9 @@ export default function ShotgunPage() {
   
   // Game state
   const [claimedCells, setClaimedCells] = useState<Map<number, CellOwner>>(new Map());
-  const [scores, setScores] = useState<ScoreData | null>(null);
-  const [winners, setWinners] = useState<{ halftime: number | null; final: number | null } | null>(null);
-  const [isJoining, setIsJoining] = useState(false);
-  const [isLocked, setIsLocked] = useState(false);
+const [scores, setScores] = useState<ScoreData | null>(null);
+   const [winners, setWinners] = useState<{ halftime: number | null; final: number | null } | null>(null);
+   const [isJoining, setIsJoining] = useState(false);
 
   // Timer for game
   const timer = useTimer({
@@ -86,10 +85,7 @@ export default function ShotgunPage() {
       // Set timer based on game start time
       if (DEMO_GAME.config.startTime) {
         const start = new Date(DEMO_GAME.config.startTime).getTime();
-        const now = Date.now();
-        const secondsUntilStart = Math.max(0, Math.floor((start - now) / 1000));
-        timer.reset(secondsUntilStart);
-        timer.start();
+        timer.setTargetTime(start);
       }
       
       return;
@@ -117,15 +113,12 @@ export default function ShotgunPage() {
             setGameState('setup');
           }
           
-          // Set timer based on game start time
-          const config = gameData.config as BoardConfig;
-          if (config.startTime) {
-            const start = new Date(config.startTime).getTime();
-            const now = Date.now();
-            const secondsUntilStart = Math.max(0, Math.floor((start - now) / 1000));
-            timer.reset(secondsUntilStart);
-            timer.start();
-          }
+// Set timer based on game start time
+           const config = gameData.config as BoardConfig;
+           if (config.startTime) {
+             const start = new Date(config.startTime).getTime();
+             timer.setTargetTime(start);
+           }
         } else {
           setGameState('not_found');
         }
@@ -214,8 +207,6 @@ export default function ShotgunPage() {
   // Handle lock in
   const handleLockIn = async () => {
     if (!game) return;
-    
-    setIsLocked(true);
     
     // Generate scores
     const scoreResult = await generateScores(game.id);
@@ -366,7 +357,7 @@ export default function ShotgunPage() {
                 {game.name}
               </h1>
               <p className="text-lg text-white mb-2">
-                {config.awayTeam} @ {config.homeTeam}
+                {config.awayTeam.abbreviation} @ {config.homeTeam.abbreviation}
               </p>
             </div>
             
@@ -486,10 +477,10 @@ export default function ShotgunPage() {
             >
               {game.name}
             </h1>
-            <p className="text-lg text-white mb-2">
-              {config.awayTeam} @ {config.homeTeam}
-            </p>
-          </div>
+<p className="text-lg text-white mb-2">
+               {config.awayTeam.abbreviation} @ {config.homeTeam.abbreviation}
+             </p>
+           </div>
 
           {/* Game Board */}
           <ShotgunBoard

@@ -154,7 +154,7 @@ export default function CreateBoard() {
         pricePerCell: formData.entryFee,
         homeTeamId: formData.homeTeam,
         awayTeamId: formData.awayTeam,
-        sport: SPORTS_LEAGUES.FOOTBALL,
+        sport: SPORTS_LEAGUES.NFL,
         gameStartTime: formData.startTime || undefined,
       }, userId);
 

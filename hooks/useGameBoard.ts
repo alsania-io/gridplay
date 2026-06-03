@@ -138,6 +138,9 @@ function generateDefaultConfig(mode: GameMode): BoardConfig {
   return {
     mode,
     pricePerCell: 100, // $1.00 in cents
+    entryFee: 100, // $1.00 in cents
+    prizePool: 0, // Will be calculated based on entries
+    startTime: new Date().toISOString(),
     homeTeam: { ...defaultTeam, id: 'home', name: 'Home Team', abbreviation: 'HOME' },
     awayTeam: { ...defaultTeam, id: 'away', name: 'Away Team', abbreviation: 'AWAY' },
     sport: 'nfl',
@@ -366,8 +369,8 @@ export function useGameBoard(options: UseGameBoardOptions): UseGameBoardReturn {
     const newColScores = fisherYatesShuffle(baseScores);
 
     // For 5x5 mode, we only need 5 scores
-    const rowScoreCount = mode === GAME_MODES.FIVE_BY_FIVE ? 5 : gridSize.rows;
-    const colScoreCount = mode === GAME_MODES.FIVE_BY_FIVE ? 5 : gridSize.cols;
+    const rowScoreCount = mode === "5x5" || mode === "FIVE_BY_FIVE" ? 5 : gridSize.rows;
+    const colScoreCount = mode === "5x5" || mode === "FIVE_BY_FIVE" ? 5 : gridSize.cols;
 
     setBoardState(prev => ({
       ...prev,

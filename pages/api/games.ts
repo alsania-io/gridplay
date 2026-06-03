@@ -85,15 +85,18 @@ async function handleGet(
     }
 
     // Transform data to match Game type
-    const games: Game[] = (data || []).map(row => ({
+    const games: Game[] = (data || []).map((row: { id: string; name: string; mode: string; status: string; config: BoardConfig; created_at: string; updated_at: string; creator_id?: string }) => ({
       id: row.id,
       name: row.name,
       mode: row.mode as GameMode,
       status: row.status,
       config: row.config as BoardConfig,
+      cells: [],
+      rowScores: [],
+      colScores: [],
       createdAt: row.created_at,
       updatedAt: row.updated_at,
-      creatorId: row.creator_id,
+      createdBy: row.creator_id || '',
     }));
 
     return res.status(200).json({
@@ -204,9 +207,12 @@ async function handlePost(
       mode: data.mode as GameMode,
       status: data.status,
       config: data.config as BoardConfig,
+      cells: [],
+      rowScores: [],
+      colScores: [],
       createdAt: data.created_at,
       updatedAt: data.updated_at,
-      creatorId: data.creator_id,
+      createdBy: data.creator_id || '',
     };
 
     return res.status(201).json({ game });

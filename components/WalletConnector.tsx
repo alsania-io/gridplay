@@ -144,10 +144,10 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
 
     try {
       // Request accounts
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      await window.ethereum!.request({ method: 'eth_requestAccounts' });
 
       // Create provider
-      const newProvider = new ethers.BrowserProvider(window.ethereum);
+      const newProvider = new ethers.BrowserProvider(window.ethereum!);
       const newSigner = await newProvider.getSigner();
       const userAddress = await newSigner.getAddress();
 
@@ -168,10 +168,10 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
       setBalances(balances);
 
       // Setup event listeners
-      window.ethereum.on('accountsChanged', () => {
+      window.ethereum!.on('accountsChanged', () => {
         window.location.reload();
       });
-      window.ethereum.on('chainChanged', () => {
+      window.ethereum!.on('chainChanged', () => {
         window.location.reload();
       });
     } catch (error) {
@@ -212,11 +212,11 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
       refreshBalances();
     };
 
-    window.ethereum.on('chainChanged', handleChainChanged);
+window.ethereum!.on('chainChanged', handleChainChanged);
 
-    return () => {
-      window.ethereum.removeListener('chainChanged', handleChainChanged);
-    };
+     return () => {
+       window.ethereum!.removeListener('chainChanged', handleChainChanged);
+     };
   }, [hasWallet, checkNetwork, refreshBalances]);
 
   const formattedBalances: Record<TokenSymbol, string> = {

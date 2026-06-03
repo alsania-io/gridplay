@@ -33,9 +33,9 @@ const statusConfig: Record<BoardStatus, { label: string; color: string; bgColor:
 };
 
 const modeLabels: Record<string, string> = {
-  [GAME_MODES.SHOTGUN]: 'Shotgun (1×25)',
-  [GAME_MODES.FIVE_BY_FIVE]: 'Classic (5×5)',
-  [GAME_MODES.TEN_BY_TEN]: 'Standard (10×10)',
+  ["SHOTGUN"]: 'Shotgun (1×25)',
+  ["FIVE_BY_FIVE"]: 'Classic (5×5)',
+  ["TEN_BY_TEN"]: 'Standard (10×10)',
 };
 
 const formatCurrency = (cents: number): string => {
