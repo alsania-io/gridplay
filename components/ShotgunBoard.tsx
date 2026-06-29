@@ -39,9 +39,12 @@ export interface ShotgunBoardProps {
 }
 
 // Payout structure for shotgun game
+// 90% player payout, 10% house per half
 const SHOTGUN_PAYOUTS = {
-  halftime: 0.4,
-  final: 0.6,
+  playerShare: 0.9,
+  houseShare: 0.1,
+  halftime: 0.45, // 90% of 50% = 45% of total pool per half
+  final: 0.45,
 };
 
 /**
@@ -160,9 +163,9 @@ export const ShotgunBoard: React.FC<ShotgunBoardProps> = ({
     // Lock the board
     setIsLocked(true);
 
-    // Generate random winners
-    const halftimeWinner = Math.floor(Math.random() * 10);
-    const finalWinner = Math.floor(Math.random() * 10) + 10;
+    // Generate random winners (0-8 for halftime, 9-17 for final)
+    const halftimeWinner = Math.floor(Math.random() * 9);
+    const finalWinner = Math.floor(Math.random() * 9) + 9;
 
     setWinners({
       halftime: halftimeWinner,
@@ -265,8 +268,8 @@ export const ShotgunBoard: React.FC<ShotgunBoardProps> = ({
           >
             Halftime
           </div>
-          <div className="grid grid-cols-10 gap-1">
-            {Array.from({ length: 10 }).map((_, i) => {
+          <div className="grid grid-cols-9 gap-1">
+            {Array.from({ length: 9 }).map((_, i) => {
               const index = i;
               const owner = cells.get(index);
               const isSelected = selectedCells.has(index);
@@ -338,9 +341,9 @@ export const ShotgunBoard: React.FC<ShotgunBoardProps> = ({
           >
             Final
           </div>
-          <div className="grid grid-cols-10 gap-1">
-            {Array.from({ length: 10 }).map((_, i) => {
-              const index = i + 10; // Offset for final row
+          <div className="grid grid-cols-9 gap-1">
+            {Array.from({ length: 9 }).map((_, i) => {
+              const index = i + 9; // Offset for final row
               const owner = cells.get(index);
               const isSelected = selectedCells.has(index);
               const isWinner = winners.final === index;

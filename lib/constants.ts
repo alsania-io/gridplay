@@ -13,11 +13,11 @@
  * Supported game modes for GridPlay
  */
 export const GAME_MODES = {
-  SHOTGUN: { name: 'Shotgun', gridSize: { rows: 2, cols: 10 }, totalCells: 20 },
+  SHOTGUN: { name: 'Shotgun', gridSize: { rows: 2, cols: 9 }, totalCells: 18 },
   FIVE_BY_FIVE: { name: '5x5 Grid', gridSize: { rows: 5, cols: 5 }, totalCells: 25 },
   TEN_BY_TEN: { name: '10x10 Grid', gridSize: { rows: 10, cols: 10 }, totalCells: 100 },
   // Legacy lowercase keys for DB compatibility
-  shotgun: { name: 'Shotgun', gridSize: { rows: 2, cols: 10 }, totalCells: 20 },
+  shotgun: { name: 'Shotgun', gridSize: { rows: 2, cols: 9 }, totalCells: 18 },
   '5x5': { name: '5x5 Grid', gridSize: { rows: 5, cols: 5 }, totalCells: 25 },
   '10x10': { name: '10x10 Grid', gridSize: { rows: 10, cols: 10 }, totalCells: 100 },
 } as const;
@@ -26,11 +26,11 @@ export const GAME_MODES = {
  * Grid size configurations for each game mode
  */
 export const GRID_SIZES = {
-  SHOTGUN: { rows: 2, cols: 10, totalCells: 20 },
+  SHOTGUN: { rows: 2, cols: 9, totalCells: 18 },
   FIVE_BY_FIVE: { rows: 5, cols: 5, totalCells: 25 },
   TEN_BY_TEN: { rows: 10, cols: 10, totalCells: 100 },
   // Legacy lowercase keys for DB compatibility
-  shotgun: { rows: 2, cols: 10, totalCells: 20 },
+  shotgun: { rows: 2, cols: 9, totalCells: 18 },
   '5x5': { rows: 5, cols: 5, totalCells: 25 },
   '10x10': { rows: 10, cols: 10, totalCells: 100 },
 } as const;
@@ -268,12 +268,15 @@ export const ENTRY_FEES = {
 
 /**
  * Payout structure percentages by game mode
+ * 5x5: 4 cells Q1 (16%), 6 cells Q2 (24%), 4 cells Q3 (16%), 8 cells Q4 (32%), 3 cells house (12%)
+ * 10x10: 16 cells Q1 (16%), 24 cells Q2 (24%), 16 cells Q3 (16%), 32 cells Q4 (32%), 12 cells house (12%)
+ * Shotgun: 9 cells each half, 90% player payout, 10% house
  */
 export const PAYOUT_STRUCTURE = {
-  SHOTGUN: { first: 0.5, second: 0.3, third: 0.2 },
-  FIVE_BY_FIVE: { first: 0.5, second: 0.3, third: 0.2 },
-  TEN_BY_TEN: { first: 0.5, second: 0.25, third: 0.15, fourth: 0.1 },
-  shotgun: { first: 0.5, second: 0.3, third: 0.2 },
-  '5x5': { first: 0.5, second: 0.3, third: 0.2 },
-  '10x10': { first: 0.5, second: 0.25, third: 0.15, fourth: 0.1 },
+  SHOTGUN: { playerShare: 0.9, houseShare: 0.1 },
+  FIVE_BY_FIVE: { q1: 0.16, q2: 0.24, q3: 0.16, q4: 0.32, house: 0.12 },
+  TEN_BY_TEN: { q1: 0.16, q2: 0.24, q3: 0.16, q4: 0.32, house: 0.12 },
+  shotgun: { playerShare: 0.9, houseShare: 0.1 },
+  '5x5': { q1: 0.16, q2: 0.24, q3: 0.16, q4: 0.32, house: 0.12 },
+  '10x10': { q1: 0.16, q2: 0.24, q3: 0.16, q4: 0.32, house: 0.12 },
 } as const;

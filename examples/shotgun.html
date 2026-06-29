@@ -243,7 +243,7 @@
 
                 const row = document.createElement('div');
                 row.classList.add('board-row');
-                for (let j = 0; j < 10; j++) {
+                for (let j = 0; j < 9; j++) {
                     const squareWrapper = document.createElement('div');
                     squareWrapper.classList.add('square-wrapper');
 
@@ -254,7 +254,7 @@
                     const square = document.createElement('div');
                     square.classList.add('square');
                     square.innerHTML = '<span class="number"></span>';
-                    square.addEventListener('click', () => toggleSelection(square, i * 10 + j));
+                    square.addEventListener('click', () => toggleSelection(square, i * 9 + j));
                     squareWrapper.appendChild(square);
 
                     row.appendChild(squareWrapper);
@@ -298,8 +298,8 @@
 
             startButton.disabled = true;
 
-            const halftimeWinner = Math.floor(Math.random() * 10);
-            const finalWinner = Math.floor(Math.random() * 10) + 10;
+            const halftimeWinner = Math.floor(Math.random() * 9);
+            const finalWinner = Math.floor(Math.random() * 9) + 9;
 
             const squares = document.querySelectorAll('.square');
             squares.forEach(square => square.classList.remove('winner'));
@@ -308,7 +308,7 @@
             squares[finalWinner].classList.add('winner');
 
             let resultText = `Halftime Winner: Square #${halftimeWinner + 1} (Top Row)<br>
-                              Final Winner: Square #${finalWinner - 9} (Bottom Row)`;
+                              Final Winner: Square #${finalWinner - 8} (Bottom Row)`;
 
             if (selectedSquares.includes(halftimeWinner) || selectedSquares.includes(finalWinner)) {
                 resultText += '<br><br>Congratulations! You won!';
