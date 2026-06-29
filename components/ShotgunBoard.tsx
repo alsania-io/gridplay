@@ -189,12 +189,29 @@ export const ShotgunBoard: React.FC<ShotgunBoardProps> = ({
   }, [cells, winners, userId]);
 
   // Generate random numbers for display
+  // Shotgun: 9 cells per half, each half gets 9 numbers from 0-9 (no duplicates within each half)
   const randomNumbers = useMemo(() => {
     const nums: number[] = [];
-    for (let i = 0; i < 20; i++) {
-      nums.push(Math.floor(Math.random() * 10));
+    // Generate 9 unique numbers for the first half
+    const firstHalf = Array.from({ length: 10 }, (_, i) => i);
+    // Shuffle and take first 9
+    for (let i = firstHalf.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [firstHalf[i], firstHalf[j]] = [firstHalf[j], firstHalf[i]];
     }
-    return nums;
+    const firstHalfSelected = firstHalf.slice(0, 9);
+    
+    // Generate 9 unique numbers for the second half
+    const secondHalf = Array.from({ length: 10 }, (_, i) => i);
+    for (let i = secondHalf.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [secondHalf[i], secondHalf[j]] = [secondHalf[j], secondHalf[i]];
+    }
+    const secondHalfSelected = secondHalf.slice(0, 9);
+    
+    // Combine: first 9 for first half, next 9 for second half
+    // (plus 2 extra? No, we have 18 cells total)
+    return [...firstHalfSelected, ...secondHalfSelected];
   }, []);
 
   return (

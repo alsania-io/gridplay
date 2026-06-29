@@ -368,14 +368,82 @@ export function useGameBoard(options: UseGameBoardOptions): UseGameBoardReturn {
     const newRowScores = fisherYatesShuffle(baseScores);
     const newColScores = fisherYatesShuffle(baseScores);
 
-    // For 5x5 mode, we only need 5 scores
-    const rowScoreCount = mode === "5x5" || mode === "FIVE_BY_FIVE" ? 5 : gridSize.rows;
-    const colScoreCount = mode === "5x5" || mode === "FIVE_BY_FIVE" ? 5 : gridSize.cols;
+    // Determine row and column score counts based on mode
+    const isShotgun = mode === "SHOTGUN" || mode === "shotgun";
+    const is5x5 = mode === "5x5" || mode === "FIVE_BY_FIVE";
+    const is10x10 = mode === "10x10" || mode === "TEN_BY_TEN";
+
+    let rowScoreCount = gridSize.rows;
+    let colScoreCount = gridSize.cols;
+    let finalRowScores: number[] = [];
+    let finalColScores: number[] = [];
+
+    if (isShotgun) {
+      // Shotgun: 2 rows of 9 cells. First half gets 9 random numbers, second half gets the remaining 9.
+      // Row 0: first 9 numbers from shuffled 0-9, Row 1: last 1 number? No, we need 9 numbers per row.
+      // Actually, we need 9 numbers for each half, so we take 9 from the shuffled array for row 0,
+      // and the remaining 1 number? Wait, that's only 10 total.
+      // Shotgun has 18 cells: 9 per half. We need 9 numbers for each half, all from 0-9.
+      // So we shuffle 0-9, take first 9 for row 0, and for row 1 we shuffle again and take 9.
+      // Or we could use the same set for both halves. Let me re-read the spec.
+      // Actually: "the shotgun has 0-9 for first half then 0-9 for the second"
+      // So each half gets numbers 0-9, meaning each row gets all 10 numbers? But there are only 9 cells per row.
+      // So each row gets 9 of the 10 numbers, no duplicates within the row.
+      // And the numbers can repeat across halves? Or should the halves share the same 0-9 set?
+      // I think each half gets its own random 9 numbers from 0-9, no duplicates within each half.
+      // Let me implement it as: shuffle 0-9, take first 9 for row 0, shuffle again, take first 9 for row 1.
+      const row0Scores = fisherYatesShuffle(baseScores).slice(0, 9);
+      const row1Scores = fisherYatesShuffle(baseScores).slice(0, 9);
+      finalRowScores = [...row0Scores, ...row1Scores]; // Length 18, 9 per row
+      finalColScores = []; // Shotgun doesn't use column scores in the same way
+      colScoreCount = 0;
+    } else if (is5x5) {
+      // 5x5: 5 rows, each row has two numbers: one from 0-4 and one from 5-9
+      // Split 0-9 into low (0-4) and high (5-9)
+      const lowScores = [0, 1, 2, 3, 4];
+      const highScores = [5, 6, 7, 8, 9];
+      
+      // Shuffle both sets separately
+      const shuffledLow = fisherYatesShuffle(lowScores);
+      const shuffledHigh = fisherYatesShuffle(highScores);
+      
+      // Pair them up: row 0 gets (shuffledLow[0], shuffledHigh[0]), row 1 gets (shuffledLow[1], shuffledHigh[1]), etc.
+      // Each row has two numbers, so we need 5 rows with 2 numbers each = 10 total row numbers (5 low, 5 high)
+      // Actually, for the board display, we need each row to show two numbers, so rowScores should be an array of pairs.
+      // But currently rowScores is a flat array. I'll store them as pairs: [low, high, low, high, ...]
+      finalRowScores = [];
+      for (let i = 0; i < 5; i++) {
+        finalRowScores.push(shuffledLow[i], shuffledHigh[i]);
+      }
+      // finalRowScores length: 10 (5 pairs)
+      
+      // Same for columns
+      const shuffledColLow = fisherYatesShuffle(lowScores);
+      const shuffledColHigh = fisherYatesShuffle(highScores);
+      finalColScores = [];
+      for (let i = 0; i < 5; i++) {
+        finalColScores.push(shuffledColLow[i], shuffledColHigh[i]);
+      }
+      // finalColScores length: 10 (5 pairs)
+      
+      rowScoreCount = 10; // 5 pairs = 10 numbers
+      colScoreCount = 10;
+    } else if (is10x10) {
+      // 10x10: 10 rows with numbers 0-9 (no duplicates)
+      finalRowScores = newRowScores; // Already shuffled 0-9
+      finalColScores = newColScores; // Already shuffled 0-9
+      rowScoreCount = 10;
+      colScoreCount = 10;
+    } else {
+      // Fallback for any other mode
+      finalRowScores = newRowScores.slice(0, rowScoreCount);
+      finalColScores = newColScores.slice(0, colScoreCount);
+    }
 
     setBoardState(prev => ({
       ...prev,
-      rowScores: newRowScores.slice(0, rowScoreCount),
-      colScores: newColScores.slice(0, colScoreCount),
+      rowScores: finalRowScores,
+      colScores: finalColScores,
       updatedAt: new Date().toISOString(),
     }));
   }, [mode, gridSize]);
@@ -390,9 +458,33 @@ export function useGameBoard(options: UseGameBoardOptions): UseGameBoardReturn {
     const homeDigit = homeScore % 10;
     const awayDigit = awayScore % 10;
 
-    // Find the row and column indices
-    const rowIndex = rowScores.indexOf(homeDigit);
-    const colIndex = colScores.indexOf(awayDigit);
+    // Determine if we're in 5x5 mode (paired numbers) or regular mode
+    const is5x5 = mode === "5x5" || mode === "FIVE_BY_FIVE";
+    
+    let rowIndex = -1;
+    let colIndex = -1;
+
+    if (is5x5) {
+      // For 5x5: rowScores is [low0, high0, low1, high1, low2, high2, low3, high3, low4, high4]
+      // We need to find which row contains the homeDigit in either the low or high position
+      for (let i = 0; i < rowScores.length; i += 2) {
+        if (rowScores[i] === homeDigit || rowScores[i + 1] === homeDigit) {
+          rowIndex = i / 2; // Convert pair index to row index (0-4)
+          break;
+        }
+      }
+      // Same for columns
+      for (let i = 0; i < colScores.length; i += 2) {
+        if (colScores[i] === awayDigit || colScores[i + 1] === awayDigit) {
+          colIndex = i / 2;
+          break;
+        }
+      }
+    } else {
+      // For 10x10 and shotgun: rowScores and colScores are flat arrays
+      rowIndex = rowScores.indexOf(homeDigit);
+      colIndex = colScores.indexOf(awayDigit);
+    }
 
     if (rowIndex === -1 || colIndex === -1) {
       return [];
@@ -414,7 +506,7 @@ export function useGameBoard(options: UseGameBoardOptions): UseGameBoardReturn {
     }));
 
     return winningPositions;
-  }, [rowScores, colScores]);
+  }, [rowScores, colScores, mode]);
 
   // Lock the board
   const lockBoard = useCallback(() => {
