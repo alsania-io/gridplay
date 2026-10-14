@@ -1,7 +1,7 @@
 # GridPlay - Agent Instructions
 
 ## Quick Reference
-- **Framework**: Next.js 15 (App Router) + React 18 + TypeScript 5.7
+- **Framework**: Next.js 16 (App Router + Pages Router) + React 18 + TypeScript 5.7
 - **Styling**: Tailwind CSS + Chakra UI v3
 - **Database**: Supabase (PostgreSQL) with RLS
 - **Payments**: Crypto tokens (ALSA/SPIRIT) + Stripe/PayPal (deprecated)

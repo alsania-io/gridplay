@@ -83,7 +83,7 @@ Tired of messy spreadsheets, cash piles, and manual score-checking for your spor
 
 ## Tech Stack
 
-- **Frontend**: Next.js 15, React 18, TypeScript 5.7, Tailwind CSS, Chakra UI
+- **Frontend**: Next.js 16 (App Router + Pages Router), React 18, TypeScript 5.7, Tailwind CSS, Chakra UI
 - **Backend**: Next.js API Routes, Supabase (PostgreSQL)
 - **Payments**: Stripe, PayPal, Crypto
 - **Testing**: Jest, React Testing Library
@@ -92,7 +92,7 @@ Tired of messy spreadsheets, cash piles, and manual score-checking for your spor
 ## Setup Instructions
 
 ### Prerequisites
-- Node.js
+- Node.js **≥ 24.0.0** (enforced via `package.json` engines)
 - npm or yarn
 - Supabase account
 
@@ -218,7 +218,11 @@ Ensure these environment variables are set in your deployment:
 
 ```
 gridplay/
-├── app/                    # Next.js App Router pages
+├── app/                    # Next.js App Router (primary)
+│   ├── api/               # App Router API routes (boards, cells)
+│   ├── board/[id]/        # Board detail page
+│   ├── create/            # Board creation page
+│   └── dashboard/         # Board listing dashboard
 ├── components/             # Reusable React components
 │   ├── __tests__/         # Component unit tests
 │   ├── Button.tsx         # Button component

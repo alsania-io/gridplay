@@ -1,5 +1,11 @@
 # GridPlay Token Integration Summary
 
+> **STATUS: PARTIALLY CURRENT (2026-10-14).** Frontend token integration is
+> complete and wallet context is now unified — `components/WalletProvider.tsx`
+> is the single context owner; `WalletConnector.tsx` re-exports from it (the
+> earlier duplicate-context bug is fixed in commit `3bf6ff4`). Escrow contract
+> deployment, backend escrow wiring, and payout distribution remain **TBD**.
+
 ## Completed Work
 
 ### 1. Token Infrastructure

@@ -1,5 +1,12 @@
 # GridPlay QA Audit Report
 
+> **STATUS: SUPERSEDED (2026-10-14).** This audit predates the App Router
+> migration and the fixes shipped in commit `3bf6ff4`. Its recommendations are
+> addressed: `tsconfig.json` include paths corrected, `npm run build` passes,
+> `.env.example` present, and a full App Router layer added. Current quality
+> gates: type-check clean, ESLint 0 errors (flat config), 219 tests passing,
+> production build green. Retained as a point-in-time record.
+
 **Date:** 2026-02-16  
 **Auditor:** Test Engineer (QA Lead)  
 **Project:** GridPlay - Sports Squares Betting Platform  
