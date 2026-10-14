@@ -83,9 +83,14 @@ export const ShotgunBoard: React.FC<ShotgunBoardProps> = ({
   });
   const [isLocked, setIsLocked] = useState(false);
 
+  // Capture the initial remaining time once (Date.now() is impure during render)
+  const [initialRemaining] = useState<number>(() =>
+    startTime ? Math.max(0, Math.floor((startTime - Date.now()) / 1000)) : 600
+  );
+
   // Timer for game start
   const timer = useTimer({
-    initialTime: startTime ? Math.max(0, Math.floor((startTime - Date.now()) / 1000)) : 600,
+    initialTime: initialRemaining,
     onEnd: () => {
       setGameStarted(true);
       if (onGameStart) {
@@ -190,7 +195,7 @@ export const ShotgunBoard: React.FC<ShotgunBoardProps> = ({
 
   // Generate random numbers for display
   // Shotgun: 9 cells per half, each half gets 9 numbers from 0-9 (no duplicates within each half)
-  const randomNumbers = useMemo(() => {
+  const [randomNumbers] = useState<number[]>(() => {
     const nums: number[] = [];
     // Generate 9 unique numbers for the first half
     const firstHalf = Array.from({ length: 10 }, (_, i) => i);
@@ -212,7 +217,7 @@ export const ShotgunBoard: React.FC<ShotgunBoardProps> = ({
     // Combine: first 9 for first half, next 9 for second half
     // (plus 2 extra? No, we have 18 cells total)
     return [...firstHalfSelected, ...secondHalfSelected];
-  }, []);
+  });
 
   return (
     <div className={`shotgun-board ${className}`}>

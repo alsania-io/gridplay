@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import React from 'react';
 import Layout from '@/components/Layout';
+import { AuthProvider } from '@/lib/auth/AuthProvider';
+import { ToastProvider } from '@/hooks/use-toast';
 
 export const metadata: Metadata = {
   title: {
@@ -81,7 +83,11 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className="min-h-screen bg-background text-text antialiased">
-        <Layout>{children}</Layout>
+        <AuthProvider>
+          <ToastProvider>
+            <Layout>{children}</Layout>
+          </ToastProvider>
+        </AuthProvider>
       </body>
     </html>
   );

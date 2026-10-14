@@ -6,10 +6,17 @@
  */
 
 import { createMocks } from 'node-mocks-http';
-import handler from '../games';
+import gamesHandler from '../../pages/api/games';
+
+// node-mocks-http requests are compatible at runtime; cast for the legacy
+// NextApiRequest/NextApiResponse signature to keep the test types clean.
+const handler = gamesHandler as unknown as (
+  req: ReturnType<typeof createMocks>['req'],
+  res: ReturnType<typeof createMocks>['res']
+) => Promise<void> | void;
 
 // Mock Supabase client
-jest.mock('../../../utils/supabaseClient', () => ({
+jest.mock('@/utils/supabaseClient', () => ({
   supabase: {
     from: jest.fn(() => ({
       select: jest.fn().mockReturnThis(),
@@ -25,6 +32,18 @@ describe('/api/games Endpoint', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
+
+  // Shared test payload for POST tests
+  const validGamePayload = {
+    name: 'Test Game',
+    mode: '10x10',
+    config: {
+      homeTeam: { id: 'home', name: 'Home Team', abbreviation: 'HOME' },
+      awayTeam: { id: 'away', name: 'Away Team', abbreviation: 'AWAY' },
+      entryFee: 100,
+      sport: 'nfl',
+    },
+  };
 
   // ===========================================
   // GET /api/games Tests
@@ -60,8 +79,8 @@ describe('/api/games Endpoint', () => {
         query: {},
       });
 
-      // Mock the Supabase response
-      const supabase = require('../../../utils/supabaseClient').supabase;
+       // Mock the Supabase response
+       const supabase = require('@/utils/supabaseClient').supabase;
       supabase.from.mockReturnValue({
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
@@ -90,7 +109,7 @@ describe('/api/games Endpoint', () => {
         query: { status: 'open' },
       });
 
-      const supabase = require('../../../utils/supabaseClient').supabase;
+      const supabase = require('@/utils/supabaseClient').supabase;
       const mockEq = jest.fn().mockReturnThis();
       
       supabase.from.mockReturnValue({
@@ -115,7 +134,7 @@ describe('/api/games Endpoint', () => {
         query: { mode: '10x10' },
       });
 
-      const supabase = require('../../../utils/supabaseClient').supabase;
+      const supabase = require('@/utils/supabaseClient').supabase;
       const mockEq = jest.fn().mockReturnThis();
       
       supabase.from.mockReturnValue({
@@ -140,7 +159,7 @@ describe('/api/games Endpoint', () => {
         query: { page: '2', pageSize: '10' },
       });
 
-      const supabase = require('../../../utils/supabaseClient').supabase;
+      const supabase = require('@/utils/supabaseClient').supabase;
       const mockRange = jest.fn().mockResolvedValue({
         data: [],
         error: null,
@@ -167,7 +186,7 @@ describe('/api/games Endpoint', () => {
         query: { pageSize: '200' },
       });
 
-      const supabase = require('../../../utils/supabaseClient').supabase;
+      const supabase = require('@/utils/supabaseClient').supabase;
       const mockRange = jest.fn().mockResolvedValue({
         data: [],
         error: null,
@@ -193,7 +212,7 @@ describe('/api/games Endpoint', () => {
         query: {},
       });
 
-      const supabase = require('../../../utils/supabaseClient').supabase;
+      const supabase = require('@/utils/supabaseClient').supabase;
       
       supabase.from.mockReturnValue({
         select: jest.fn().mockReturnThis(),
@@ -220,7 +239,7 @@ describe('/api/games Endpoint', () => {
         query: {},
       });
 
-      const supabase = require('../../../utils/supabaseClient').supabase;
+      const supabase = require('@/utils/supabaseClient').supabase;
       
       supabase.from.mockReturnValue({
         select: jest.fn().mockReturnThis(),
@@ -248,24 +267,13 @@ describe('/api/games Endpoint', () => {
   // ===========================================
   
   describe('POST /api/games', () => {
-    const validGamePayload = {
-      name: 'Test Game',
-      mode: '10x10',
-      config: {
-        homeTeam: { id: 'home', name: 'Home Team', abbreviation: 'HOME' },
-        awayTeam: { id: 'away', name: 'Away Team', abbreviation: 'AWAY' },
-        entryFee: 100,
-        sport: 'nfl',
-      },
-    };
-
     it('should create a new game with valid data', async () => {
       const { req, res } = createMocks({
         method: 'POST',
         body: validGamePayload,
       });
 
-      const supabase = require('../../../utils/supabaseClient').supabase;
+      const supabase = require('@/utils/supabaseClient').supabase;
       
       supabase.from.mockReturnValueOnce({
         insert: jest.fn().mockReturnThis(),
@@ -414,7 +422,7 @@ describe('/api/games Endpoint', () => {
         },
       });
 
-      const supabase = require('../../../utils/supabaseClient').supabase;
+      const supabase = require('@/utils/supabaseClient').supabase;
       const mockInsert = jest.fn().mockReturnThis();
       
       supabase.from.mockReturnValueOnce({
@@ -451,7 +459,7 @@ describe('/api/games Endpoint', () => {
         body: validGamePayload,
       });
 
-      const supabase = require('../../../utils/supabaseClient').supabase;
+      const supabase = require('@/utils/supabaseClient').supabase;
       
       supabase.from.mockReturnValue({
         insert: jest.fn().mockReturnThis(),
@@ -482,7 +490,7 @@ describe('/api/games Endpoint', () => {
         query: {},
       });
 
-      const supabase = require('../../../utils/supabaseClient').supabase;
+      const supabase = require('@/utils/supabaseClient').supabase;
       
       supabase.from.mockReturnValue({
         select: jest.fn().mockReturnThis(),
@@ -554,7 +562,7 @@ describe('/api/games Endpoint', () => {
       const { req, res } = createMocks({
         method: 'POST',
         body: 'not-json',
-      });
+      } as unknown as Parameters<typeof createMocks>[0]);
 
       // This would typically be handled by Next.js body parser
       // but we test our handler's robustness
@@ -573,7 +581,7 @@ describe('/api/games Endpoint', () => {
         },
       });
 
-      const supabase = require('../../../utils/supabaseClient').supabase;
+      const supabase = require('@/utils/supabaseClient').supabase;
       
       supabase.from.mockReturnValueOnce({
         insert: jest.fn().mockReturnThis(),
@@ -607,7 +615,7 @@ describe('/api/games Endpoint', () => {
         query: { page: '-1' },
       });
 
-      const supabase = require('../../../utils/supabaseClient').supabase;
+      const supabase = require('@/utils/supabaseClient').supabase;
       const mockRange = jest.fn().mockResolvedValue({
         data: [],
         error: null,
@@ -633,7 +641,7 @@ describe('/api/games Endpoint', () => {
         query: { page: 'abc' },
       });
 
-      const supabase = require('../../../utils/supabaseClient').supabase;
+      const supabase = require('@/utils/supabaseClient').supabase;
       const mockRange = jest.fn().mockResolvedValue({
         data: [],
         error: null,

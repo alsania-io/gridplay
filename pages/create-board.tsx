@@ -70,10 +70,19 @@ export default function CreateBoard() {
   // Calculate payouts
   const payouts = useMemo(() => {
     const structure = PAYOUT_STRUCTURE[formData.gameMode];
+    // Shotgun uses playerShare/houseShare; other modes use quarterly payouts (q1=q1st, q2=q2nd, q3=q3rd)
+    if ('playerShare' in structure) {
+      const totalToPlayers = prizePool * structure.playerShare;
+      return {
+        first: Math.floor(totalToPlayers / 3),
+        second: Math.floor(totalToPlayers / 3),
+        third: Math.floor(totalToPlayers / 3),
+      };
+    }
     return {
-      first: Math.floor(prizePool * structure.first),
-      second: Math.floor(prizePool * structure.second),
-      third: Math.floor(prizePool * structure.third),
+      first: Math.floor(prizePool * structure.q1),
+      second: Math.floor(prizePool * structure.q2),
+      third: Math.floor(prizePool * structure.q3),
     };
   }, [prizePool, formData.gameMode]);
 

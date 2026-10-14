@@ -104,6 +104,16 @@ export interface BoardState {
   updatedAt: string;
   lockedAt?: string;
   completedAt?: string;
+  /** Denormalized mode (mirrors config.mode) for convenience */
+  mode?: GameMode;
+  /** Number of unclaimed cells */
+  availableCells?: number;
+  /** Current home team score (live) */
+  homeScore?: number;
+  /** Current away team score (live) */
+  awayScore?: number;
+  /** Current game period/quarter */
+  period?: string;
 }
 
 /**
@@ -134,7 +144,7 @@ export interface BoardListItem {
   availableCells: number;
   totalCells: number;
   createdBy: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
 // ===========================================

@@ -48,6 +48,5 @@ dist/
 # deprecated files
 .deprecated/
 .vscode/
-node_modules/
 *.zip
 *.png

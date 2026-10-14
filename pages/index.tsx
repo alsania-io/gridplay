@@ -289,7 +289,7 @@ const HomePage: React.FC<HomePageProps> = ({ featuredGames = [] }) => {
               Ready to Play?
             </h2>
             <p className="text-[#9CA3AF] mb-8 max-w-xl mx-auto">
-              Create your first game and invite friends. It's free to get started.
+              Create your first game and invite friends. It&apos;s free to get started.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/create-board" passHref legacyBehavior>

@@ -103,14 +103,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       <div className="flex justify-center items-center mb-4">
         <div 
           className="text-lg font-bold px-4"
-          style={{ color: THEME_COLORS.PRIMARY }}
+          style={{ color: 'var(--gp-color-primary)' }}
         >
           {board.config.awayTeam?.name || 'Away'}
         </div>
-        <div className="mx-4 text-[#9CA3AF]">@</div>
+        <div className="mx-4 text-gray-400">@</div>
         <div 
           className="text-lg font-bold px-4"
-          style={{ color: THEME_COLORS.PRIMARY }}
+          style={{ color: 'var(--gp-color-primary)' }}
         >
           {board.config.homeTeam?.name || 'Home'}
         </div>
@@ -129,42 +129,42 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         <div 
           className="aspect-square flex items-center justify-center text-xs font-bold"
           style={{ 
-            color: THEME_COLORS.TEXT_MUTED,
+            color: 'var(--gp-color-text-secondary)',
             backgroundColor: 'rgba(255, 255, 255, 0.1)',
           }}
         >
           V/H
         </div>
 
-        {/* Column Headers (Home Team Scores) */}
-        {board.colScores.length > 0 ? (
-          board.colScores.slice(0, cols).map((score, col) => (
-            <div
-              key={`col-${col}`}
-              className="aspect-square flex items-center justify-center text-sm font-bold"
-              style={{ 
-                color: THEME_COLORS.TEXT_MUTED,
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              }}
-            >
-              {score}
-            </div>
-          ))
-        ) : (
-          // Placeholder headers when scores not generated
-          Array.from({ length: cols }).map((_, col) => (
-            <div
-              key={`col-${col}`}
-              className="aspect-square flex items-center justify-center text-sm font-bold"
-              style={{ 
-                color: THEME_COLORS.TEXT_MUTED,
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              }}
-            >
-              ?
-            </div>
-          ))
-        )}
+   {/* Column Headers (Home Team Scores) */}
+      {board.colScores.length > 0 ? (
+        board.colScores.slice(0, cols).map((score, col) => (
+          <div
+            key={`col-${col}`}
+            className="aspect-square flex items-center justify-center text-sm font-bold"
+            style={{ 
+              color: 'var(--gp-color-text-secondary)',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            }}
+          >
+            {score}
+          </div>
+        ))
+      ) : (
+        // Placeholder headers when scores not generated
+        Array.from({ length: cols }).map((_, col) => (
+          <div
+            key={`col-${col}`}
+            className="aspect-square flex items-center justify-center text-sm font-bold"
+            style={{ 
+              color: 'var(--gp-color-text-secondary)',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            }}
+          >
+            ?
+          </div>
+        ))
+      )}
 
         {/* Grid Rows */}
         {Array.from({ length: rows }).map((_, row) => (
@@ -173,7 +173,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             <div
               className="aspect-square flex items-center justify-center text-sm font-bold"
               style={{ 
-                color: THEME_COLORS.TEXT_MUTED,
+                color: 'var(--gp-color-text-secondary)',
                 backgroundColor: 'rgba(255, 255, 255, 0.1)',
               }}
             >
@@ -191,20 +191,20 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                   key={`cell-${row}-${col}`}
                   className={`
                     relative aspect-square border rounded transition-all duration-150
-                    ${isSelected && !isOwned ? 'ring-2 ring-[#10B981] ring-offset-1 ring-offset-[#0A0A0A]' : ''}
+                    ${isSelected && !isOwned ? 'ring-2 ring-primary ring-offset-1 ring-offset-background' : ''}
                   `}
                   style={{
                     backgroundColor: cell.isWinner 
-                      ? THEME_COLORS.ACCENT 
+                      ? 'var(--gp-color-accent)' 
                       : isSelected && !isOwned
                         ? 'rgba(16, 185, 129, 0.3)'
                         : isOwned 
-                          ? THEME_COLORS.SECONDARY 
+                          ? 'var(--gp-color-secondary)' 
                           : 'rgba(255, 255, 255, 0.05)',
                     borderColor: cell.isWinner 
-                      ? THEME_COLORS.ACCENT 
+                      ? 'var(--gp-color-accent)' 
                       : isSelected || isOwned
-                        ? THEME_COLORS.PRIMARY 
+                        ? 'var(--gp-color-primary)' 
                         : 'rgba(55, 65, 81, 0.5)',
                     cursor: interactive && !isOwned ? 'pointer' : 'default',
                   }}
@@ -262,7 +262,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       </div>
 
       {/* Legend */}
-      <div className="flex justify-center gap-6 mt-4 text-xs text-[#9CA3AF]">
+      <div className="flex justify-center gap-6 mt-4 text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
           <div 
             className="w-4 h-4 rounded border"
@@ -273,14 +273,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({
         <div className="flex items-center gap-2">
           <div 
             className="w-4 h-4 rounded border"
-            style={{ backgroundColor: THEME_COLORS.SECONDARY, borderColor: THEME_COLORS.PRIMARY }}
+            style={{ backgroundColor: 'var(--gp-color-secondary)', borderColor: 'var(--gp-color-primary)' }}
           />
           <span>Claimed</span>
         </div>
         <div className="flex items-center gap-2">
           <div 
             className="w-4 h-4 rounded border"
-            style={{ backgroundColor: THEME_COLORS.ACCENT, borderColor: THEME_COLORS.ACCENT }}
+            style={{ backgroundColor: 'var(--gp-color-accent)', borderColor: 'var(--gp-color-accent)' }}
           />
           <span>Winner</span>
         </div>

@@ -5,7 +5,7 @@
  */
 
 import type { Config } from 'jest';
-import nextJest from 'next/jest';
+import nextJest from 'next/jest.js';
 
 const createJestConfig = nextJest({
   dir: './',
@@ -42,9 +42,9 @@ const config: Config = {
       statements: 50,
     },
   },
-  transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.json' }],
-  },
+   transform: {
+     '^.+\\.(ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],
+   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/.next/', '<rootDir>/examples/'],
   verbose: true,

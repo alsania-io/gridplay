@@ -68,6 +68,8 @@ const [scores, setScores] = useState<ScoreData | null>(null);
   useEffect(() => {
     // Demo mode
     if (demo === 'true' || !gameId) {
+      // router.query is only available after mount, so demo init must happen in an effect.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setGame(DEMO_GAME);
       
       // Check for stored user info
@@ -270,7 +272,7 @@ const [scores, setScores] = useState<ScoreData | null>(null);
               Game Not Found
             </h1>
             <p className="text-[#9CA3AF] mb-6">
-              The shotgun game you're looking for doesn't exist or has ended.
+              The shotgun game you&apos;re looking for doesn&apos;t exist or has ended.
             </p>
             <Button
               variant="primary"

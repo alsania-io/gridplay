@@ -5,6 +5,8 @@
  * Mobile responsive with hamburger menu.
  */
 
+"use client";
+
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Button from './Button';

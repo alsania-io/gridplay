@@ -1,10 +1,3 @@
-/**
- * GridPlay Supabase Database Types
- * 
- * Auto-generated types for Supabase database schema.
- * These types provide type safety for database operations.
- */
-
 export type Json =
   | string
   | number
@@ -36,7 +29,7 @@ export interface Database {
           name: string
           mode: string
           status?: string
-          config: Json
+          config?: Json
           row_scores?: number[]
           col_scores?: number[]
           created_by: string
@@ -59,6 +52,7 @@ export interface Database {
           locked_at?: string | null
           completed_at?: string | null
         }
+        Relationships: []
       }
       cells: {
         Row: {
@@ -97,6 +91,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       users: {
         Row: {
@@ -123,6 +118,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       payments: {
         Row: {
@@ -147,7 +143,7 @@ export interface Database {
           status?: string
           provider: string
           provider_payment_id?: string | null
-          cells: Json
+          cells?: Json
           created_at?: string
           updated_at?: string
         }
@@ -164,6 +160,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
     }
     Views: {
@@ -176,12 +173,13 @@ export interface Database {
           total_cells: number
           claimed_cells: number
           available_cells: number
-          price_per_cell: number
+          price_per_cell: string
           home_team_name: string
           away_team_name: string
           created_by: string
           created_at: string
         }
+        Relationships: []
       }
       user_stats: {
         Row: {
@@ -191,6 +189,7 @@ export interface Database {
           total_wins: number
           total_earnings: number
         }
+        Relationships: []
       }
     }
     Functions: {
@@ -205,7 +204,7 @@ export interface Database {
         Returns: {
           success: boolean
           message: string
-        }
+        }[]
       }
       generate_scores: {
         Args: {
@@ -214,7 +213,7 @@ export interface Database {
         Returns: {
           row_scores: number[]
           col_scores: number[]
-        }
+        }[]
       }
       calculate_winners: {
         Args: {
@@ -224,7 +223,7 @@ export interface Database {
         }
         Returns: {
           winning_cells: Json
-        }
+        }[]
       }
     }
     Enums: {
@@ -232,6 +231,9 @@ export interface Database {
       game_mode: 'shotgun' | '5x5' | '10x10'
       payment_status: 'pending' | 'processing' | 'completed' | 'failed' | 'refunded'
       payment_provider: 'stripe' | 'paypal'
+    }
+    CompositeTypes: {
+      [_ in never]: never
     }
   }
 }

@@ -305,7 +305,7 @@ export default function JoinBoard() {
               Game Not Found
             </h1>
             <p className="text-[#9CA3AF] mb-6">
-              The game you're looking for doesn't exist or has ended.
+              The game you&apos;re looking for doesn&apos;t exist or has ended.
             </p>
             <Button
               variant="primary"
@@ -540,7 +540,7 @@ export default function JoinBoard() {
           {/* Help Text */}
           <div className="mt-6 p-4 rounded-lg bg-blue-900/20 border border-blue-500/30">
             <p className="text-sm text-blue-300">
-              💡 Payment is one-time per game. After paying, you'll be able to claim your cells.
+              💡 Payment is one-time per game. After paying, you&apos;ll be able to claim your cells.
             </p>
           </div>
         </div>

@@ -179,7 +179,7 @@ describe('useTimer Hook', () => {
       );
       
       act(() => {
-        jest.advanceTimersByTime(50);
+        jest.advanceTimersByTime(50000);
       });
       
       expect(result.current.time).toBe(50);
@@ -199,7 +199,7 @@ describe('useTimer Hook', () => {
       );
       
       act(() => {
-        jest.advanceTimersByTime(50);
+        jest.advanceTimersByTime(50000);
       });
       
       expect(result.current.time).toBe(50);
@@ -315,20 +315,26 @@ describe('useTimer Hook', () => {
     });
     
     it('should count down based on target timestamp', () => {
+      // Mock Date.now to be deterministic
+      const mockNow = jest.spyOn(Date, 'now').mockImplementation(() => 0);
+      mockNow.mockClear();
+      
       const { result } = renderHook(() => useTimer({ initialTime: 0 }));
       
-      const targetTime = Date.now() + 5000;
+      const targetTime = 10000; // 10 seconds in the future
       
       act(() => {
         result.current.setTargetTime(targetTime);
       });
       
       act(() => {
-        jest.advanceTimersByTime(2000);
+        jest.advanceTimersByTime(1000);
       });
       
-      // Should have ~3 seconds remaining
-      expect(result.current.time).toBeCloseTo(3, 0);
+      // Should have 9 seconds remaining (10000 - 1000 = 9000ms / 1000 = 9)
+      expect(result.current.time).toBe(9);
+      
+      mockNow.mockRestore();
     });
   });
   
@@ -532,7 +538,7 @@ describe('useTimer Hook', () => {
       });
       
       act(() => {
-        jest.advanceTimersByTime(10);
+        jest.advanceTimersByTime(10000);
       });
       
       act(() => {
@@ -547,7 +553,7 @@ describe('useTimer Hook', () => {
       });
       
       act(() => {
-        jest.advanceTimersByTime(10);
+        jest.advanceTimersByTime(10000);
       });
       
       act(() => {
@@ -562,7 +568,7 @@ describe('useTimer Hook', () => {
       });
       
       act(() => {
-        jest.advanceTimersByTime(10);
+        jest.advanceTimersByTime(10000);
       });
       
       expect(result.current.time).toBe(70);

@@ -4,7 +4,7 @@
  * Custom hook for responsive design with breakpoints matching Tailwind.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 import { BREAKPOINTS } from '../lib/constants';
 
 export type Breakpoint = keyof typeof BREAKPOINTS;
@@ -26,34 +26,28 @@ export interface UseMediaQueryReturn {
  * @returns Whether the media query matches
  */
 export function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState<boolean>(false);
+  const subscribe = useCallback(
+    (onStoreChange: () => void) => {
+      if (typeof window === 'undefined') {
+        return () => {};
+      }
+      const mediaQuery = window.matchMedia(query);
+      mediaQuery.addEventListener('change', onStoreChange);
+      return () => mediaQuery.removeEventListener('change', onStoreChange);
+    },
+    [query]
+  );
 
-  useEffect(() => {
-    // Check if window is available (SSR safety)
+  const getSnapshot = useCallback((): boolean => {
     if (typeof window === 'undefined') {
-      return;
+      return false;
     }
-
-    const mediaQuery = window.matchMedia(query);
-    
-    // Set initial value
-    setMatches(mediaQuery.matches);
-
-    // Create event handler
-    const handler = (event: MediaQueryListEvent) => {
-      setMatches(event.matches);
-    };
-
-    // Add listener (using addEventListener for modern browsers)
-    mediaQuery.addEventListener('change', handler);
-
-    // Cleanup
-    return () => {
-      mediaQuery.removeEventListener('change', handler);
-    };
+    return window.matchMedia(query).matches;
   }, [query]);
 
-  return matches;
+  const getServerSnapshot = useCallback((): boolean => false, []);
+
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
 /**
@@ -61,8 +55,6 @@ export function useMediaQuery(query: string): boolean {
  * @returns Object with breakpoint utilities
  */
 export function useBreakpoint(): UseMediaQueryReturn {
-  const [currentBreakpoint, setCurrentBreakpoint] = useState<Breakpoint | 'xs'>('xs');
-
   // Media query matches for each breakpoint
   const isSm = useMediaQuery(`(min-width: ${BREAKPOINTS.SM}px)`);
   const isMd = useMediaQuery(`(min-width: ${BREAKPOINTS.MD}px)`);
@@ -70,22 +62,18 @@ export function useBreakpoint(): UseMediaQueryReturn {
   const isXl = useMediaQuery(`(min-width: ${BREAKPOINTS.XL}px)`);
   const is2Xl = useMediaQuery(`(min-width: ${BREAKPOINTS['2XL']}px)`);
 
-  // Determine current breakpoint
-  useEffect(() => {
-    if (is2Xl) {
-      setCurrentBreakpoint('2XL');
-    } else if (isXl) {
-      setCurrentBreakpoint('XL');
-    } else if (isLg) {
-      setCurrentBreakpoint('LG');
-    } else if (isMd) {
-      setCurrentBreakpoint('MD');
-    } else if (isSm) {
-      setCurrentBreakpoint('SM');
-    } else {
-      setCurrentBreakpoint('xs');
-    }
-  }, [isSm, isMd, isLg, isXl, is2Xl]);
+  // Derive the current breakpoint (pure, no effect needed)
+  const currentBreakpoint: Breakpoint | 'xs' = is2Xl
+    ? '2XL'
+    : isXl
+      ? 'XL'
+      : isLg
+        ? 'LG'
+        : isMd
+          ? 'MD'
+          : isSm
+            ? 'SM'
+            : 'xs';
 
   // Check if screen is at least a given breakpoint
   const isAtLeast = useCallback((breakpoint: Breakpoint): boolean => {

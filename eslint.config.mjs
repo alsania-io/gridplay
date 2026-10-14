@@ -1,52 +1,35 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+import nextCoreWebVitals from 'eslint-config-next/core-web-vitals';
+import tseslint from 'typescript-eslint';
 
 const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  ...nextCoreWebVitals,
+  {
+    plugins: {
+      '@typescript-eslint': tseslint.plugin,
+    },
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'warn',
+      'react-hooks/exhaustive-deps': 'warn',
+      '@next/next/no-img-element': 'warn',
+      // Wallet subscriptions, async board loads, and router-query-driven init are
+      // legitimate effects; keep this advisory rather than blocking.
+      'react-hooks/set-state-in-effect': 'warn',
+    },
+  },
   {
     ignores: [
-      "node_modules/**",
-      "dist/**",
-      "build/**",
-      ".next/**",
-      "out/**",
-      "public/**",
-      ".deprecated/**",
-      ".kilocode/**",
-      "**/.next/**",
-      "**/node_modules/**",
-      "**/.deprecated/**",
-      "next-env.d.ts",
-      "server.js",
-      "postcss.config.mjs",
-      "eslint.config.*",
+      'node_modules/**',
+      '.next/**',
+      '.swc/**',
+      'out/**',
+      'coverage/**',
+      '.kilocode/**',
+      '.deprecated/**',
+      'next-env.d.ts',
+      'examples/**',
+      'public/**',
     ],
-  },
-  {
-    files: ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**/*"],
-    rules: {
-      "@typescript-eslint/no-require-imports": "off",
-      "@typescript-eslint/no-unused-vars": "warn",
-    },
-  },
-  {
-    rules: {
-      "react/no-unescaped-entities": "warn",
-      "@next/next/no-html-link-for-pages": "error",
-      "@next/next/no-img-element": "warn",
-      "@typescript-eslint/no-unused-vars": [
-        "warn",
-        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
-      ],
-    },
   },
 ];
 

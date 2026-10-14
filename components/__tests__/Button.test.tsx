@@ -33,22 +33,22 @@ describe('Button Component', () => {
       render(<Button>Default Button</Button>);
       const button = screen.getByRole('button');
       
-      // Primary variant should have green background
-      expect(button).toHaveClass('bg-[#10B981]');
+      // Primary variant should have semantic bg-primary class
+      expect(button).toHaveClass('bg-primary');
     });
     
     it('should apply secondary variant styles correctly', () => {
       render(<Button variant="secondary">Secondary</Button>);
       const button = screen.getByRole('button');
       
-      expect(button).toHaveClass('bg-[#1E3A5A]');
+      expect(button).toHaveClass('bg-secondary');
     });
     
     it('should apply accent variant styles correctly', () => {
       render(<Button variant="accent">Accent</Button>);
       const button = screen.getByRole('button');
       
-      expect(button).toHaveClass('bg-[#F59E0B]');
+      expect(button).toHaveClass('bg-accent');
     });
     
     it('should apply outline variant styles correctly', () => {

@@ -1,10 +1,14 @@
 /**
  * GridPlay Layout Component
- * 
+ *
  * Main layout wrapper with responsive navigation, header, and footer.
  */
 
-import React from 'react';
+"use client";
+
+import React, { useEffect, useMemo } from 'react';
+import { useAuth } from '@/lib/auth/AuthProvider';
+import { WalletProvider } from '@/components/WalletProvider';
 import Header, { NavItem } from './Header';
 import Footer from './Footer';
 
@@ -15,74 +19,69 @@ export interface LayoutProps {
   title?: string;
   /** Navigation items for header */
   navItems?: NavItem[];
-  /** Whether user is authenticated */
-  isAuthenticated?: boolean;
-  /** User display name (when authenticated) */
-  userName?: string;
-  /** User avatar URL (when authenticated) */
-  userAvatar?: string;
-  /** Callback when login is clicked */
-  onLogin?: () => void;
-  /** Callback when signup is clicked */
-  onSignup?: () => void;
-  /** Callback when logout is clicked */
-  onLogout?: () => void;
-  /** Whether to show footer */
-  showFooter?: boolean;
-  /** Whether to show header */
-  showHeader?: boolean;
   /** Whether to show wallet status */
   showWallet?: boolean;
   /** Additional CSS classes for main content */
   className?: string;
 }
 
-export const Layout: React.FC<LayoutProps> = ({
+// Internal component with access to auth context
+const LayoutInternal: React.FC<LayoutProps & { children: React.ReactNode }> = ({
   children,
   title,
   navItems,
-  isAuthenticated = false,
-  userName,
-  userAvatar,
-  onLogin,
-  onSignup,
-  onLogout,
-  showFooter = true,
-  showHeader = true,
-  showWallet = true,
+  showWallet,
   className = '',
 }) => {
   // Set document title if provided
-  React.useEffect(() => {
+  useEffect(() => {
     if (title) {
       document.title = title;
     }
   }, [title]);
 
+  const { isAuthenticated, user } = useAuth();
+
+  // Memoize derived values to avoid unnecessary re-renders of Header
+  const headerProps = useMemo(
+    () => ({
+      navItems,
+      isAuthenticated: !!isAuthenticated,
+      userName: user?.email?.split('@')[0] || user?.email,
+      showWallet,
+    }),
+    [isAuthenticated, user?.email, navItems, showWallet]
+  );
+
   return (
-    <div className="min-h-screen flex flex-col bg-[#0A0A0A]">
-      {/* Header */}
-      {showHeader && (
-        <Header
+    <>
+      <Header {...headerProps} />
+      <main className={`flex-1 ${className}`}>{children}</main>
+      <Footer />
+    </>
+  );
+};
+
+export const Layout: React.FC<LayoutProps> = ({
+  children,
+  title,
+  navItems,
+  showWallet = true,
+  className = '',
+}) => {
+  return (
+    <WalletProvider>
+      <div className="min-h-screen bg-background text-foreground flex flex-col">
+        <LayoutInternal
+          title={title}
           navItems={navItems}
-          isAuthenticated={isAuthenticated}
-          userName={userName}
-          userAvatar={userAvatar}
-          onLogin={onLogin}
-          onSignup={onSignup}
-          onLogout={onLogout}
           showWallet={showWallet}
-        />
-      )}
-
-      {/* Main Content */}
-      <main className={`flex-1 ${className}`}>
-        {children}
-      </main>
-
-      {/* Footer */}
-      {showFooter && <Footer />}
-    </div>
+          className={className}
+        >
+          {children}
+        </LayoutInternal>
+      </div>
+    </WalletProvider>
   );
 };
 

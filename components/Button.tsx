@@ -30,11 +30,11 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: 'bg-[#10B981] text-gray-900 hover:bg-[#059669] focus:ring-[#10B981]',
-  secondary: 'bg-[#1E3A5A] text-white hover:bg-[#2D4A6A] focus:ring-[#1E3A5A]',
-  accent: 'bg-[#F59E0B] text-gray-900 hover:bg-[#D97706] focus:ring-[#F59E0B]',
-  outline: 'bg-transparent border-2 border-[#10B981] text-[#10B981] hover:bg-[#10B981] hover:text-gray-900 focus:ring-[#10B981]',
-  ghost: 'bg-transparent text-white hover:bg-[#2A2A2A] focus:ring-gray-500',
+  primary: 'bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-primary',
+  secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/90 focus:ring-secondary',
+  accent: 'bg-accent text-accent-foreground hover:bg-accent/90 focus:ring-accent',
+  outline: 'bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground focus:ring-primary',
+  ghost: 'bg-transparent text-foreground hover:bg-surface focus:ring-muted',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -90,7 +90,7 @@ export const Button: React.FC<ButtonProps> = ({
     'font-medium',
     'rounded-md',
     'transition-all duration-150',
-    'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0A0A0A]',
+    'focus:outline-none focus:ring-2 focus:ring-offset-2',
     'disabled:opacity-50 disabled:cursor-not-allowed',
     fullWidth ? 'w-full' : '',
   ].join(' ');

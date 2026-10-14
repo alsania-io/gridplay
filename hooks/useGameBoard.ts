@@ -5,7 +5,9 @@
  * Implements Fisher-Yates shuffle for random number assignment.
  */
 
-import { useState, useCallback, useMemo } from 'react';
+"use client";
+
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { 
   BoardCell, 
   BoardState, 
@@ -22,8 +24,10 @@ import {
 } from '../lib/constants';
 
 export interface UseGameBoardOptions {
+  /** Board ID to load from the backend */
+  boardId?: string;
   /** Game mode (shotgun, 5x5, 10x10) */
-  mode: GameMode;
+  mode?: GameMode;
   /** Initial board state (if loading from DB) */
   initialState?: BoardState;
   /** Current user ID */
@@ -87,6 +91,12 @@ export interface UseGameBoardReturn {
   isCellClaimed: (row: number, col: number) => boolean;
   /** Get winning cells */
   winningCells: BoardCell[];
+  /** Whether the board is loading from the backend */
+  isLoading: boolean;
+  /** Error encountered while loading the board */
+  error: Error | null;
+  /** Clear the current cell selection */
+  clearSelection: () => void;
 }
 
 /**
@@ -172,9 +182,15 @@ function generateDefaultConfig(mode: GameMode): BoardConfig {
  * const winners = gameBoard.calculateWinners(21, 14);
  * ```
  */
-export function useGameBoard(options: UseGameBoardOptions): UseGameBoardReturn {
+export function useGameBoard(
+  optionsOrId: UseGameBoardOptions | string
+): UseGameBoardReturn {
+  const options: UseGameBoardOptions =
+    typeof optionsOrId === 'string' ? { boardId: optionsOrId } : optionsOrId;
+
   const {
-    mode,
+    mode: modeOption,
+    boardId,
     initialState,
     userId,
     displayName,
@@ -182,7 +198,11 @@ export function useGameBoard(options: UseGameBoardOptions): UseGameBoardReturn {
     onGameStart,
   } = options;
 
+  const mode: GameMode = modeOption ?? 'TEN_BY_TEN';
   const gridSize = GRID_SIZES[mode];
+
+  const [isLoading, setIsLoading] = useState<boolean>(!!boardId);
+  const [error, setError] = useState<Error | null>(null);
 
   // Initialize state
   const [boardState, setBoardState] = useState<BoardState>(() => {
@@ -205,6 +225,83 @@ export function useGameBoard(options: UseGameBoardOptions): UseGameBoardReturn {
   });
 
   const [selectedCells, setSelectedCells] = useState<Array<{ row: number; col: number }>>([]);
+
+  // Load board from the backend when a boardId is provided
+  useEffect(() => {
+    if (!boardId || initialState) {
+      setIsLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadBoard = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const { supabase } = await import('../lib/supabase/client');
+        const { data, error: fetchError } = await supabase
+          .from('boards')
+          .select('*')
+          .eq('id', boardId)
+          .single();
+
+        if (fetchError) throw fetchError;
+        if (cancelled) return;
+
+        if (data) {
+          const loadedMode = (data.mode as GameMode) in GRID_SIZES ? (data.mode as GameMode) : mode;
+          const size = GRID_SIZES[loadedMode];
+          const cfg = (data.config ?? {}) as Record<string, unknown>;
+          const pricePerCell = Number(cfg.pricePerCell ?? 0);
+          const homeName = typeof cfg.homeTeam === 'string' ? cfg.homeTeam : 'Home Team';
+          const awayName = typeof cfg.awayTeam === 'string' ? cfg.awayTeam : 'Away Team';
+          const defaultTeam = { id: 'team', name: 'Team', abbreviation: 'TM' };
+
+          setBoardState({
+            id: data.id,
+            name: data.name,
+            config: {
+              mode: loadedMode,
+              pricePerCell,
+              entryFee: pricePerCell,
+              prizePool: pricePerCell * size.totalCells,
+              startTime: data.created_at ?? new Date().toISOString(),
+              homeTeam: { ...defaultTeam, id: 'home', name: homeName },
+              awayTeam: { ...defaultTeam, id: 'away', name: awayName },
+              sport: 'nfl',
+            },
+            status: (data.status as BoardState['status']) ?? BOARD_STATUS.OPEN,
+            cells: generateInitialCells(loadedMode),
+            rowScores: (data.row_scores as number[]) ?? [],
+            colScores: (data.col_scores as number[]) ?? [],
+            createdBy: data.created_by ?? '',
+            createdAt: data.created_at ?? new Date().toISOString(),
+            updatedAt: data.updated_at ?? new Date().toISOString(),
+            availableCells: size.totalCells,
+          });
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err : new Error('Failed to load board'));
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    };
+
+    loadBoard();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [boardId]);
+
+  // Clear current selection
+  const clearSelection = useCallback(() => {
+    setSelectedCells([]);
+  }, []);
 
   // Derived state
   const cells = useMemo(() => boardState.cells, [boardState.cells]);
@@ -283,12 +380,16 @@ export function useGameBoard(options: UseGameBoardOptions): UseGameBoardReturn {
   const toggleCell = useCallback((row: number, col: number) => {
     if (isLocked || isCellClaimed(row, col)) return;
 
-    if (isCellSelected(row, col)) {
-      deselectCell(row, col);
-    } else {
-      selectCell(row, col);
-    }
-  }, [isLocked, isCellClaimed, isCellSelected, selectCell, deselectCell]);
+    // Use functional updater to avoid stale closure issues with rapid toggles
+    setSelectedCells(prev => {
+      const isSelected = prev.some(cell => cell.row === row && cell.col === col);
+      if (isSelected) {
+        return prev.filter(cell => !(cell.row === row && cell.col === col));
+      } else {
+        return [...prev, { row, col }];
+      }
+    });
+  }, [isLocked, isCellClaimed]);
 
   // Claim a specific cell
   const claimCell = useCallback(async (row: number, col: number) => {
@@ -396,7 +497,7 @@ export function useGameBoard(options: UseGameBoardOptions): UseGameBoardReturn {
       const row1Scores = fisherYatesShuffle(baseScores).slice(0, 9);
       finalRowScores = [...row0Scores, ...row1Scores]; // Length 18, 9 per row
       finalColScores = []; // Shotgun doesn't use column scores in the same way
-      colScoreCount = 0;
+      colScoreCount = 9; // Shotgun has 9 columns (cols=9)
     } else if (is5x5) {
       // 5x5: 5 rows, each row has two numbers: one from 0-4 and one from 5-9
       // Split 0-9 into low (0-4) and high (5-9)
@@ -491,13 +592,13 @@ export function useGameBoard(options: UseGameBoardOptions): UseGameBoardReturn {
     }
 
     // Mark winning cells
-    const winningPositions: Array<{ row: number; col: number }> = [];
+    const winningCell = { row: rowIndex, col: colIndex };
+    const winningPositions: Array<{ row: number; col: number }> = [winningCell];
 
     setBoardState(prev => ({
       ...prev,
       cells: prev.cells.map(cell => {
         if (cell.row === rowIndex && cell.col === colIndex) {
-          winningPositions.push({ row: cell.row, col: cell.col });
           return { ...cell, isWinner: true };
         }
         return cell;
@@ -582,6 +683,9 @@ export function useGameBoard(options: UseGameBoardOptions): UseGameBoardReturn {
     isCellSelected,
     isCellClaimed,
     winningCells,
+    isLoading,
+    error,
+    clearSelection,
   };
 }
 
